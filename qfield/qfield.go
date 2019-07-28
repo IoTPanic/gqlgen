@@ -23,31 +23,35 @@ type QField struct {
 }
 
 // ConstructQField to get a starting object
-func ConstructQField() QField {
+func constructQField() QField {
 	ret := QField{}
 	ret.Children = make(map[string]QField)
 	ret.Arguments = make(map[string]interface{})
 	return ret
 }
 
+// ContainsDirectChild will return boolean if the child field is within a qfild object
 func (QF QField) ContainsDirectChild(k string) bool {
 	_, ret := QF.Children[k]
 	return ret
 }
 
+// GetDirectChild gets the qfield for a child field. Returns a boolean if the field exists, as well as said qfield.
 func (QF QField) GetDirectChild(k string) (bool, QField) {
 	if QF.ContainsDirectChild(k) {
 		ret, _ := QF.Children[k]
 		return true, ret
 	}
-	return false, ConstructQField()
+	return false, constructQField()
 }
 
+// HasArg tests if a qfield has an argument
 func (QF QField) HasArg(k string) bool {
 	_, b := QF.Arguments[k]
 	return b
 }
 
+// GetArg returns a boolean if the argument is present in a qfield and the value as an interface
 func (QF QField) GetArg(k string) (bool, interface{}) {
 	ret, b := QF.Arguments[k]
 	return b, ret
@@ -63,6 +67,7 @@ func (QF QField) GetArgAsListOfString(k string) []*string {
 	}
 }
 
+// GetArgAsString Returns an argument as a string
 func (QF QField) GetArgAsString(k string) string {
 	_, val := QF.GetArg(k)
 	switch v := val.(type) {
@@ -80,11 +85,13 @@ func (QF QField) GetArgAsString(k string) string {
 	//return (*Val).Raw
 }
 
+// GetArgAsInt returns a specified argument as an int
 func (QF QField) GetArgAsInt(k string) int {
 	val, _ := strconv.Atoi(QF.GetArgAsString(k))
 	return val
 }
 
+// GetArgAsBool returns a specified argument as a boolean
 func (QF QField) GetArgAsBool(k string) bool {
 	_, val := QF.GetArg(k)
 	switch v := val.(type) {
@@ -98,7 +105,7 @@ func (QF QField) GetArgAsBool(k string) bool {
 }
 
 func toQField2(f ast.Field, vars map[string]interface{}) QField {
-	ret := ConstructQField()
+	ret := constructQField()
 	ret.Name = f.Name
 	for _, a := range f.Arguments {
 		//print(a.Value)
@@ -121,7 +128,7 @@ func toQField2(f ast.Field, vars map[string]interface{}) QField {
 }
 
 func toQField(f graphql.CollectedField, vars map[string]interface{}) QField {
-	ret := ConstructQField()
+	ret := constructQField()
 	ret.Name = f.Name
 	for _, a := range f.Arguments {
 		value := (*(a.Value))
@@ -143,7 +150,7 @@ func toQField(f graphql.CollectedField, vars map[string]interface{}) QField {
 }
 
 func asQField(ctx context.Context, vars map[string]interface{}) QField {
-	var ret = ConstructQField()
+	var ret = constructQField()
 	for _, f := range graphql.CollectFieldsCtx(ctx, nil) {
 		fmt.Println(f.Name)
 		ret.Children[f.Name] = toQField(f, vars)
@@ -151,7 +158,7 @@ func asQField(ctx context.Context, vars map[string]interface{}) QField {
 	return ret
 }
 
+//GetQField allows for the gqlgen context to be passed and the representing qfield is returned
 func GetQField(ctx context.Context, vars map[string]interface{}) QField {
-
 	return asQField(ctx, vars)
 }
