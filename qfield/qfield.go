@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/vektah/gqlparser/ast"
 )
 
 /*QField is a convienient way of creating a graphQL library with the gqlgen library. It allows for logical blocks of code to be created, that can call
@@ -29,17 +30,17 @@ func ConstructQField() QField {
 	return ret
 }
 
-func (QF QField) containsDirectChild(k string) bool {
+func (QF QField) ContainsDirectChild(k string) bool {
 	_, ret := QF.Children[k]
 	return ret
 }
 
-func (QF QField) getDirectChild(k string) (bool, QField) {
-	if QF.containsDirectChild(k) {
+func (QF QField) GetDirectChild(k string) (bool, QField) {
+	if QF.ContainsDirectChild(k) {
 		ret, _ := QF.Children[k]
 		return true, ret
 	}
-	return false, QFieldConstructor()
+	return false, ConstructQField()
 }
 
 func (QF QField) HasArg(k string) bool {
@@ -97,7 +98,7 @@ func (QF QField) GetArgAsBool(k string) bool {
 }
 
 func toQField2(f ast.Field, vars map[string]interface{}) QField {
-	ret := QFieldConstructor()
+	ret := ConstructQField()
 	ret.Name = f.Name
 	for _, a := range f.Arguments {
 		//print(a.Value)
@@ -120,7 +121,7 @@ func toQField2(f ast.Field, vars map[string]interface{}) QField {
 }
 
 func toQField(f graphql.CollectedField, vars map[string]interface{}) QField {
-	ret := QFieldConstructor()
+	ret := ConstructQField()
 	ret.Name = f.Name
 	for _, a := range f.Arguments {
 		value := (*(a.Value))
@@ -142,7 +143,7 @@ func toQField(f graphql.CollectedField, vars map[string]interface{}) QField {
 }
 
 func asQField(ctx context.Context, vars map[string]interface{}) QField {
-	var ret = QFieldConstructor()
+	var ret = ConstructQField()
 	for _, f := range graphql.CollectFieldsCtx(ctx, nil) {
 		fmt.Println(f.Name)
 		ret.Children[f.Name] = toQField(f, vars)
